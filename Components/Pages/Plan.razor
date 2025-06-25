@@ -1,0 +1,444 @@
+﻿@page "/plan"
+@using LicentaBalteanu.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+@using Microsoft.EntityFrameworkCore
+
+
+
+
+                <!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-section set-bg" data-setbg="img/breadcrumb-bg.jpg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="breadcrumb-text">
+                    <h2>Plan personalizat</h2>
+                    <div class="bt-option">
+                        <a href="/">Home</a>
+                        <a href="#">Pages</a>
+                        <span>Plan</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+@if (!isAuthenticated)
+{
+    <!-- ✅ Afișează tabelul static exact cum l-ai oferit -->
+    <section class="class-timetable-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="section-title">
+                        <span>Organizează-ți timpul</span>
+                        <h2>Monitorizează progresul</h2>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="table-controls">
+                        <ul>
+                            <li class="active" data-tsfilter="all">Toate evenimentele</li>
+                            <li data-tsfilter="alimentatie">Alimentație</li>
+                            <li data-tsfilter="motivation">Motivație</li>
+                            <li data-tsfilter="workout">Antrenament</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="class-timetable">
+                      <table>
+                            <thead>
+                                <tr>
+                                    <th>Ora/Ziua</th>
+                                    <th>Luni</th>
+                                    <th>Marți</th>
+                                    <th>Miercuri</th>
+                                    <th>Joi</th>
+                                    <th>Vineri</th>
+                                    <th>Sâmbătă</th>
+                                    <th>Duminică</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="class-time">06:00 - 08:00</td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Micul dejun</h5>
+                                        <span>100 grame fructe de pădure</span>
+										<span>150 grame fulgi de ovăz</span>
+										<span>100 grame iaurt grecesc</span>
+										<span>1 linguriță ulei de măsline</span>
+										                  
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Micul dejun</h5>
+                                        <span>200 grame smoothie verde cu spanac</span>
+										<span>50 grame proteine vegetale</span>
+										<span>100 grame fulgi de ovăz</span>
+										<span>1 linguriță ulei de măsline</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Micul dejun</h5>
+                                        <span>100 grame cartofi dulci</span>
+										<span>100 grame fulgi de ovăz</span>
+										<span>1 linguriță ulei de măsline</span>
+										<span>2 banane</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Micul dejun</h5>
+                                        <span>100 grame frigărui pui</span>
+										<span>3 ouă fierte</span>
+										<span>2 banane</span>
+                                    </td>
+									
+									 <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Micul dejun</h5>
+                                        <span>100 grame fulgi de ovăz</span>
+										<span>3 ouă</span>
+										<span>2 banane</span>
+										<span>50 grame nucă</span>
+                                    </td>
+									
+                                    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Micul dejun</h5>
+                                        <span>friptură de curcan</span>
+										<span>omletă de ouă</span>
+										<span></span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Micul dejun</h5>
+                                        <span>100 de grame fulgi de ovăz</span>
+										<span>100 grame iaurt grecesc</span>
+										<span>100 grame afine</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="class-time">10:00 - 12:00</td>
+                                     <td class="hover-bg ts-meta" data-tsmeta="workout">
+                                        <h5>3 seturi de:</h5>
+                                        <span>15 Flexii Jefferson</span>
+										<span>10 Flotări scapulare</span>
+										<span>10 sărituri pe cutie</span>
+										<span>10 ridicări olimpice</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
+                                        <h5>3 seturi de:</h5>
+                                        <span>6 ridicări turcești x2 brațe</span>
+										<span>8 ridicări laterale</span>
+										<span>10 ridicări olimpice</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="workout">
+                                        <h5>4 seturi de:</h5>
+                                        <span>10 sărituri verticale</span>
+										<span>10 genuflexiuni</span>
+										<span>10 ramat</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
+                                        <h5>3 seturi de:</h5>
+                                        <span>10 tracțiuni</span>
+										<span>18 împins la piept</span>
+										<span>60 de secunde cobra+cat-row</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="workout">
+                                        <h5>3 seturi de:</h5>
+                                        <span>10 tracțiuni</span>
+										<span>18 îndreptări românești</span>
+										<span>20 genuflexiuni bulgărești</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
+                                        <h5>4 seturi de</h5>
+                                        <span>10 ridicări olimpice</span>
+										<span>20 "Arnold press"</span>
+										<span>10 "hanging leg rise"</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="motivation">
+                                        <h5>Odihnă</h5>
+                                        <span>Meditație, citit și alte activități care îți plac.</span>
+										
+                                    </td>
+                                </tr>
+								
+								
+								<tr>
+    <td class="class-time">13:00 - 14:00</td>
+    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+        <h5>Prânz</h5>
+        <span>Salată verde de pui
+</span>
+    </td>
+    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+        <h5>Prânz</h5>
+        <span>pui la grătar cu lămâie</span>
+		<span>1 linguriță ulei de măsline</span>
+    </td>
+    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+        <h5>Prânz</h5>
+        <span>ficat de pui, orez si sfecla rosie</span>
+    </td>
+    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+        <h5>Prânz</h5>
+        <span>curcan și legume prăjite</span>
+		<span></span>
+    </td>
+    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+        <h5>Prânz</h5>
+        <span>salata verde și curcan</span>
+		<span>1 linguriță ulei de măsline</span>
+    </td>
+    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+        <h5>Prânz</h5>
+        <span>Somon și legume prăjite</span>
+    </td>
+    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+        <h5>Prânz</h5>
+        <span>piept de pui, brocoli, spanac și orez</span>
+		<span>1 linguriță ulei de măsline</span>
+    </td>
+</tr>
+
+								
+								
+								
+                                <tr>
+                                    <td class="class-time">17:00 - 19:00</td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Cină</h5>
+                                        <span>Vită și legume prăjite</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Cină</h5>
+                                        <span>Creveți cu ierburi aromatice și lămâie, cu fasole verde</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Cină</h5>
+                                        <span>Pui cu usturoi și lămâie, cu broccoli fiert la abur</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Cină</h5>
+                                        <span>Tilapia la cuptor cu dovlecei copți</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Cină</h5>
+                                        <span>Somon la grătar cu sparanghel</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Cină</h5>
+                                        <span>Chiftele de curcan cu morcovi copți</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="alimentatie">
+                                        <h5>Cină</h5>
+                                        <span>Somon cu glazură balsamică și sparanghel copt</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="class-time">21:00 - 22:00</td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="motivation">
+                                        <h5>Reflexie personașă</h5>
+                                        <span>scrie 3 lucruri pentru care ești recunoscător</span>
+										<span>5 minute de respirație profundă</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="workout">
+                                        <h5>Alergare</h5>
+                                        <span>30 de minute de alergare</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="motivation">
+                                        <h5>Creativitate</h5>
+                                        <span>desenează</span>
+										<span>cantă</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="motivation">
+                                        <h5>Îngrijire personală</h5>
+                                        <span>5 minute duș rece</span>
+										<span>10 minute de stretching</span>
+                                    </td>
+                                    <td class="dark-bg hover-bg ts-meta" data-tsmeta="workout">
+                                        <h5>Înot</h5>
+                                        <span>30 de minute de înot</span>
+                                    </td>
+                                    <td class="hover-bg ts-meta" data-tsmeta="motivation">
+                                        <h5>Activitate creativă</h5>
+                                        <span>scrie o poveste sau un poem scurt</span>
+										<span>scrie o listă cu lucruri pe care visezi să le faci</span>
+                                    </td>
+									<td class="dark-bg hover-bg ts-meta" data-tsmeta="motivation">
+                                        <h5>Jurnal</h5>
+                                        <span>notează lucrurile care te preocupă</span>
+										<span></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    <!-- ✅ Afișează planul personalizat generat din dietEntries și trainingEntries -->
+    <section class="class-timetable-section spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="section-title">
+                        <span>Organizează-ți timpul</span>
+                        <h2>Monitorizează progresul</h2>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="table-controls">
+                        <ul>
+                            <li class="active" data-tsfilter="all">Toate evenimentele</li>
+                            <li data-tsfilter="alimentatie">Alimentație</li>
+                            <li data-tsfilter="motivation">Motivație</li>
+                            <li data-tsfilter="workout">Antrenament</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <div class="class-timetable">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ora/Ziua</th>
+                                    <th>Luni</th>
+                                    <th>Marți</th>
+                                    <th>Miercuri</th>
+                                    <th>Joi</th>
+                                    <th>Vineri</th>
+                                    <th>Sâmbătă</th>
+                                    <th>Duminică</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var (start, end, _) in Intervals)
+                                {
+                                    <tr>
+                                        <td class="class-time">@($"{start:hh\\:mm} - {end:hh\\:mm}")</td>
+                                        @foreach (DayOfWeekCustom day in Enum.GetValues<DayOfWeekCustom>())
+                                        {
+                                            var entries = dietEntries.Concat(trainingEntries)
+                                                .Where(e => e.DayOfWeek == day && e.StartTime == start)
+                                                .ToList();
+
+                                            if (!entries.Any())
+                                            {
+                                                <td class="dark-bg hover-bg ts-meta" data-tsmeta="none">
+                                                    <h5>-</h5>
+                                                    <span></span>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td class="dark-bg hover-bg">
+                                                    @if (entries.Any(e => e.DietPlanId != null))
+                                                    {
+                                                        <div class="ts-meta" data-tsmeta="alimentatie">
+                                                            <h5>@GetMealLabel(start)</h5>
+                                                            <span>
+                                                                @foreach (var diet in entries.Where(e => e.DietPlanId != null))
+                                                                {
+                                                                    @((MarkupString)diet.Content.Replace("\n", "<br/>"))<br />
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    }
+
+                                                    @if (entries.Any(e => e.DietPlanId == null && start != TimeSpan.Parse("21:00")))
+                                                    {
+                                                        <div class="ts-meta" data-tsmeta="workout">
+                                                            <h5>Antrenament</h5>
+                                                            <span>
+                                                                @foreach (var workout in entries.Where(e => e.DietPlanId == null && start != TimeSpan.Parse("21:00")))
+                                                                {
+                                                                    @((MarkupString)workout.Content.Replace("\n", "<br/>"))<br />
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    }
+
+                                                    @if (start == TimeSpan.Parse("21:00") && entries.Any(e => e.DietPlanId == null))
+                                                    {
+                                                        <div class="ts-meta" data-tsmeta="motivation">
+                                                            <h5>Motivație</h5>
+                                                            <span>
+                                                                @foreach (var motiv in entries.Where(e => e.DietPlanId == null))
+                                                                {
+                                                                    @((MarkupString)motiv.Content.Replace("\n", "<br/>"))<br />
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    }
+                                                </td>
+                                            }
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+@code {
+    private bool isAuthenticated = false;
+    private List<PlanEntry> dietEntries = new();
+    private List<PlanEntry> trainingEntries = new();
+
+    private List<(TimeSpan Start, TimeSpan End, string Meta)> Intervals = new()
+    {
+        (TimeSpan.Parse("06:00"), TimeSpan.Parse("08:00"), "alimentatie"),
+        (TimeSpan.Parse("10:00"), TimeSpan.Parse("12:00"), "workout"),
+        (TimeSpan.Parse("13:00"), TimeSpan.Parse("14:00"), "alimentatie"),
+        (TimeSpan.Parse("17:00"), TimeSpan.Parse("19:00"), "alimentatie"),
+        (TimeSpan.Parse("21:00"), TimeSpan.Parse("22:00"), "motivation")
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+
+        if (isAuthenticated)
+        {
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                using var db = await DbFactory.CreateDbContextAsync();
+                var userEntity = await db.Users
+                    .Include(u => u.DietPlan).ThenInclude(p => p.Entries)
+                    .Include(u => u.TrainingPlan).ThenInclude(p => p.Entries)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                dietEntries = userEntity?.DietPlan?.Entries?.ToList() ?? new();
+                trainingEntries = userEntity?.TrainingPlan?.Entries?.ToList() ?? new();
+            }
+        }
+    }
+
+    private string GetMealLabel(TimeSpan time)
+    {
+        return time switch
+        {
+            var t when t == TimeSpan.Parse("06:00") => "Mic dejun",
+            var t when t == TimeSpan.Parse("13:00") => "Prânz",
+            var t when t == TimeSpan.Parse("17:00") => "Cină",
+            _ => "Dietă"
+        };
+    }
+}

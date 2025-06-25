@@ -1,0 +1,226 @@
+﻿@page "/Account/Register"
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using LicentaBalteanu.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserStore<ApplicationUser> UserStore
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IEmailSender<ApplicationUser> EmailSender
+@inject ILogger<Register> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Înregistrare</PageTitle>
+
+
+
+
+<section class="bmi-calculator-section spad">
+    <div class="container">
+        <div class="row" style="display: flex; justify-content: center;">
+  <StatusMessage Message="@Message" />
+            <div class="col-lg-6">
+                <div class="section-title chart-calculate-title">
+                    <span>Înregistrare</span>
+                    <h2>Crează un cont nou</h2>
+                </div>
+                <div class="chart-calculate-form">
+     
+                    <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                        <ValidationSummary class="text-danger" role="alert" />
+                        <div class="row">
+                           
+                            <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="nume@exemplu.com" />
+                            
+                            <ValidationMessage For="() => Input.Email" class="text-danger" />
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <InputText @bind-Value="Input.FirstName" class="form-control" autocomplete="FirstName" aria-required="true" placeholder="Prenume" />
+                                <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+                            </div>
+                            <div class="col-sm-6">
+                               
+                                <InputText @bind-Value="Input.LastName" class="form-control" autocomplete="LastName" aria-required="true" placeholder="Nume" />
+                                
+                                <ValidationMessage For="() => Input.LastName" class="text-danger" />
+                            </div>
+                            <div class="col-sm-6">
+                                <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="parolă" />
+
+                                <ValidationMessage For="() => Input.Password" class="text-danger" />
+                            </div>
+                            <div class="col-sm-6">
+                                <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="confirmă parola" />
+                               
+                                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                            </div>
+                            <div class="col-sm-6">
+                                <InputNumber @bind-Value="Input.Age" class="form-control" placeholder="Vârstă" />
+                                <ValidationMessage For="() => Input.Age" class="text-danger" />
+                            </div>
+
+                            <div class="col-sm-6">
+                                <InputNumber @bind-Value="Input.Weight" class="form-control" placeholder="Masă (kg)" />
+                                <ValidationMessage For="() => Input.Weight" class="text-danger" />
+                            </div>
+
+                            <div class="col-sm-6">
+                                <InputNumber @bind-Value="Input.Height" class="form-control" placeholder="Înălțime (cm)" />
+                                <ValidationMessage For="() => Input.Height" class="text-danger" />
+                            </div>
+
+                            <div class="col-sm-6">
+                                <InputSelect @bind-Value="Input.Gender" class="form-control">
+                                    <option value="">Selectează genul</option>
+                                    <option value="M">Masculin</option>
+                                    <option value="F">Feminin</option>
+                                    <option value="Nu spun">Nu spun</option>
+                                </InputSelect>
+                                <ValidationMessage For="() => Input.Gender" class="text-danger" />
+                            </div>
+
+                            <div class="col-lg-12">
+                                <button type="submit">Înregistrează-te</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+                        <section>
+            <h3>Folosește un alt serviciu pentru înregistrare.</h3>
+            <hr />
+            <ExternalLoginPicker />
+        </section>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+@code {
+    private IEnumerable<IdentityError>? identityErrors;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    public async Task RegisterUser(EditContext editContext)
+    {
+        var user = CreateUser();
+        user.FirstName = Input.FirstName;
+        user.LastName = Input.LastName;
+        user.Age = Input.Age;
+        user.Weight = Input.Weight;
+        user.Height = Input.Height;
+        user.Gender = Input.Gender;
+
+        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        Logger.LogInformation("User creat");
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+ 
+        if (UserManager.Options.SignIn.RequireConfirmedAccount)
+        {
+            RedirectManager.RedirectTo(
+                "Account/RegisterConfirmation",
+                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+        }
+
+        await SignInManager.SignInAsync(user, isPersistent: false);
+        RedirectManager.RedirectTo(ReturnUrl);
+    }
+
+    private ApplicationUser CreateUser()
+    {
+        try
+        {
+            return Activator.CreateInstance<ApplicationUser>();
+        }
+        catch
+        {
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
+        }
+    }
+
+    private IUserEmailStore<ApplicationUser> GetEmailStore()
+    {
+        if (!UserManager.SupportsUserEmail)
+        {
+            throw new NotSupportedException("The default UI requires a user store with email support.");
+        }
+        return (IUserEmailStore<ApplicationUser>)UserStore;
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Prenume")]
+        public string FirstName { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Nume")]
+        public string LastName { get; set; } = "";
+
+        [Required]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Parola")]
+        public string Password { get; set; } = "";
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirmare parola")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+
+        [Range(1, 120)]
+        [Display(Name = "Vârstă")]
+        public int? Age { get; set; }
+
+        [Range(30, 300)]
+        [Display(Name = "Greutate (kg)")]
+        public float? Weight { get; set; }
+
+        [Range(50, 250)]
+        [Display(Name = "Înălțime (cm)")]
+        public float? Height { get; set; }
+
+        [Required]
+        [Display(Name = "Gen")]
+        public string? Gender { get; set; } = "Nu spun";
+
+    }
+}

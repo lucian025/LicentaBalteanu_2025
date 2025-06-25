@@ -1,0 +1,151 @@
+﻿@page "/quiz"
+@using LicentaBalteanu.Data
+@using Microsoft.AspNetCore.Identity
+@rendermode InteractiveServer
+
+@inject QuestionService QuestionService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Quiz</PageTitle>
+<h1 style="color: red; font-weight: bold;">UPT</h1>
+
+@if (showStatus)
+{
+    <div style="padding: 20px; background-color: #f8f9fa; border-radius: 10px; text-align: center;">
+        <p style="font-size: 18px; font-weight: bold;">
+            Bună, @firstName! Status:
+            <span style="color:@(isSuffering == true ? "red" : "green")">
+                @(isSuffering == true ? "Suferi de spondilită anchilozantă." : "Nu suferi de spondilită anchilozantă.")
+            </span>
+            <br/>
+            @if (isSuffering == true)
+            {
+                <a class="btn btn-danger"
+                   href="/plan"
+                   style="margin-top: 20px; padding: 10px 20px; font-size: 16px;">
+                    Vezi plan de antrenament
+                </a>
+
+            }
+        </p>
+    </div>
+}
+
+@if (questions != null && currentIndex < NumberOfQuestions)
+{
+    <div style="padding-top: 50px; text-align: center;">
+        <p role="status" style="font-size: 20px; font-weight: bold; margin-bottom: 30px;">
+            Întrebarea @(currentIndex + 1): @questions[currentIndex].Text
+        </p>
+
+        <button class="btn primary-btn"
+                style="margin-right: 20px; padding: 10px 30px; font-size: 16px;"
+                @onclick="AnswerYes">
+            Da
+        </button>
+
+        <button class="btn primary-btn"
+                style="padding: 10px 30px; font-size: 16px;"
+                @onclick="AnswerNo">
+            Nu
+        </button>
+    </div>
+}
+else
+{
+    <div style="padding-top: 50px; text-align: center;">
+        <p style="font-size: 20px;">Ai terminat chestionarul!</p>
+        <p style="font-size: 18px;">Răspunsuri DA: @CountTrue</p>
+        <p style="font-size: 18px;">Răspunsuri NU: @CountFalse</p>
+
+        @if (CountTrue >= NumberOfTrueQuestionNeed)
+        {
+            <p style="color: red; font-weight: bold;">Este posibil să suferi de spondilită anchilozantă.</p>
+
+            <br />
+            <a class="btn btn-danger"
+               href="/plan"
+               style="margin-top: 20px; padding: 10px 20px; font-size: 16px;">
+                Vezi plan de antrenament
+            </a>
+
+        }
+        else
+        {
+            <p style="color: green; font-weight: bold;">Probabil nu suferi de spondilită anchilozantă.</p>
+        }
+    </div>
+}
+
+@code {
+    private int currentIndex = 0;
+    private List<Question>? questions;
+    private Dictionary<int, bool> answers = new();
+    private string? firstName;
+    private bool? isSuffering;
+    private bool showStatus = false;
+
+    [Parameter]
+    public int NumberOfQuestions { get; set; } = 7;
+
+    public int CountTrue => answers.Count(a => a.Value);
+    public int CountFalse => answers.Count(a => !a.Value);
+    public int NumberOfTrueQuestionNeed { get; set; } = 5;
+
+    protected override async Task OnInitializedAsync() 
+    {
+        // 1. Preluăm întrebările și le setăm în listă
+        var questionsResult = await QuestionService.GetRandomQuestionsAsync(NumberOfQuestions);
+        questions = questionsResult.ToList();
+        if (questions.Count < NumberOfQuestions) currentIndex = NumberOfQuestions;
+        foreach (var question in questions)
+            answers[question.Id] = false;
+
+        // 2. Doar după ce s-a terminat accesul anterior la DbContext, continuăm
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user != null && user.isSuffering.HasValue)
+        {
+            firstName = user.FirstName;
+            isSuffering = user.isSuffering;
+            showStatus = true;
+        }
+    }
+
+
+    private async Task FinishQuiz()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user != null)
+        {
+            await QuestionService.SaveUserAnswersAsync(user.Id, answers, NumberOfTrueQuestionNeed);
+        }
+    }
+
+    private async Task AnswerYes()
+    {
+        if (questions != null)
+        {
+            answers[questions[currentIndex].Id] = true;
+            currentIndex++;
+        }
+
+        if (currentIndex == NumberOfQuestions)
+            await FinishQuiz();
+    }
+
+    private async Task AnswerNo()
+    {
+        if (questions != null)
+        {
+            answers[questions[currentIndex].Id] = false;
+            currentIndex++;
+        }
+
+        if (currentIndex == NumberOfQuestions)
+            await FinishQuiz();
+    }
+}

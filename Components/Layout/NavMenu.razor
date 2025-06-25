@@ -1,0 +1,143 @@
+﻿@implements IDisposable
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using LicentaBalteanu.Data
+
+
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@inject NavigationManager NavigationManager
+
+
+<header class="header-section">
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <div class="col-lg-3">
+                <div class="logo">
+                    <NavLink class="nav-link" target="_self" href="" Match="NavLinkMatch.All">
+                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> <img src="/img/logo.png" style="max-width: 100px; max-height: 100px; margin-top: -30%;" alt="">
+                    </NavLink>
+
+
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <nav class="nav-menu">
+                    <ul>
+                        <li class="active"></li>
+                        <li>
+                            <NavLink class="nav-link" target="_self" href="/" Match="NavLinkMatch.All">
+                                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Acasă
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink class="nav-link" href="/about" target="_self"  Match="NavLinkMatch.All">
+                                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Despre noi
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink class="nav-link" href="/quiz" target="_self" Match="NavLinkMatch.All">
+                                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Află dacă Suferi
+                            </NavLink>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+            <div class="col-lg">
+                <div class="top-option">
+                    <div class="to-search search-switch">
+                        <AuthorizeView>
+                            <Authorized>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <NavLink href="Account/Manage">
+                                        <i>@firstName</i>
+                                    </NavLink>
+
+                                    <form action="Account/Logout" method="post" style="margin: 0;">
+                                        <AntiforgeryToken />
+                                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                        <button type="submit" class="nav-link"
+                                                style="background: none; border: none; padding: 0; margin: 0; color: inherit; font: inherit; cursor: pointer;">
+                                            <i>Logout</i>
+                                        </button>
+                                    </form>
+                                </div>
+
+
+                            </Authorized>
+                            <NotAuthorized>
+
+                                <NavLink href="/Account/Register">
+                                    <i> Register</i>
+                                </NavLink>
+
+                                <NavLink href="/Account/Login">
+                                    <i aria-hidden="true"> Login</i>
+                                </NavLink>
+
+                            </NotAuthorized>
+                        </AuthorizeView>
+
+                    </div>
+
+                    <div class="to-social">
+                        <a href="#"><i class="fa fa-facebook"></i></a>
+                        <a href="#"><i class="fa fa-twitter"></i></a>
+                        <a href="#"><i class="fa fa-youtube-play"></i></a>
+                        <a href="#"><i class="fa fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-open">
+                <i class="fa fa-bars"></i>
+            </div>
+        </div>
+    </div>
+   
+</header>
+
+@code {
+    private string? currentUrl;
+    private string? firstName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            var appUser = await UserManager.GetUserAsync(user);
+            firstName = appUser?.FirstName;
+        }
+        if (string.IsNullOrWhiteSpace(firstName))
+        {
+            firstName = user.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
+        }
+
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
+
